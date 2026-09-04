@@ -45,23 +45,19 @@ class SessionService:
         """Retrieves currently active draft playbook for On-air assistant."""
         shop_d = shop_service.get_shop_dir(shop_id)
         path = shop_d / "draft_playbook.json"
-        if path.exists():
-            try:
-                return json.loads(path.read_text(encoding="utf-8"))
-            except Exception:
-                pass
-        return None
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return None
 
     def log_onair_order(self, shop_id: str, order_item: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Appends a new order to the live on-air order tracker log."""
         shop_d = shop_service.get_shop_dir(shop_id)
         path = shop_d / "orders.json"
-        orders: List[Dict[str, Any]] = []
-        if path.exists():
-            try:
-                orders = json.loads(path.read_text(encoding="utf-8"))
-            except Exception:
-                orders = []
+        try:
+            orders = json.loads(path.read_text(encoding="utf-8"))
+        except (FileNotFoundError, json.JSONDecodeError):
+            orders = []
 
         order_record = {
             "order_id": f"ORD_{datetime.datetime.now(datetime.timezone.utc).strftime('%H%M%S%f')[:10]}",
@@ -81,12 +77,10 @@ class SessionService:
         """Retrieves logged on-air orders."""
         shop_d = shop_service.get_shop_dir(shop_id)
         path = shop_d / "orders.json"
-        if path.exists():
-            try:
-                return json.loads(path.read_text(encoding="utf-8"))
-            except Exception:
-                pass
-        return []
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return []
 
     def clear_onair_orders(self, shop_id: str) -> None:
         """Clears logged orders for a new session."""

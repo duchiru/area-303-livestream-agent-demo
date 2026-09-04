@@ -52,56 +52,59 @@ class DashboardService:
         # Draft playbook
         draft_file = shop_dir / "draft_playbook.json"
         draft_summary = None
-        if draft_file.exists():
-            try:
-                data = json.loads(draft_file.read_text(encoding="utf-8"))
-                draft_summary = {
-                    "exists": True,
-                    "updated_at": data.get("updated_at"),
-                    "slot": data.get("slot"),
-                    "items_count": len(data.get("items") or []),
-                    "combos_count": len(data.get("combos") or []),
-                    "vouchers_count": len(data.get("vouchers") or []),
-                    "size_bytes": draft_file.stat().st_size,
-                }
-            except Exception:
-                draft_summary = {"exists": True, "corrupted": True, "size_bytes": draft_file.stat().st_size}
+        try:
+            data = json.loads(draft_file.read_text(encoding="utf-8"))
+            draft_summary = {
+                "exists": True,
+                "updated_at": data.get("updated_at"),
+                "slot": data.get("slot"),
+                "items_count": len(data.get("items") or []),
+                "combos_count": len(data.get("combos") or []),
+                "vouchers_count": len(data.get("vouchers") or []),
+                "size_bytes": draft_file.stat().st_size,
+            }
+        except FileNotFoundError:
+            pass
+        except Exception:
+            draft_summary = {"exists": True, "corrupted": True, "size_bytes": draft_file.stat().st_size}
 
         # Orders
         orders_file = shop_dir / "orders.json"
         orders_summary = {"exists": False, "count": 0, "gmv": 0.0, "size_bytes": 0}
-        if orders_file.exists():
-            try:
-                orders = json.loads(orders_file.read_text(encoding="utf-8"))
-                total_gmv = sum(float(o.get("price", 0.0) or 0.0) * int(o.get("quantity", 1) or 1) for o in orders)
-                orders_summary = {
-                    "exists": True,
-                    "count": len(orders),
-                    "gmv": total_gmv,
-                    "size_bytes": orders_file.stat().st_size,
-                }
-            except Exception:
-                orders_summary = {"exists": True, "corrupted": True, "count": 0, "gmv": 0.0, "size_bytes": orders_file.stat().st_size}
+        try:
+            orders = json.loads(orders_file.read_text(encoding="utf-8"))
+            total_gmv = sum(float(o.get("price", 0.0) or 0.0) * int(o.get("quantity", 1) or 1) for o in orders)
+            orders_summary = {
+                "exists": True,
+                "count": len(orders),
+                "gmv": total_gmv,
+                "size_bytes": orders_file.stat().st_size,
+            }
+        except FileNotFoundError:
+            pass
+        except Exception:
+            orders_summary = {"exists": True, "corrupted": True, "count": 0, "gmv": 0.0, "size_bytes": orders_file.stat().st_size}
 
         # Learner State
         learner_file = shop_dir / "learning_state.json"
         learner_summary = {"exists": False, "alpha": 0.5, "beta": 0.2, "n_sessions": 0, "size_bytes": 0}
-        if learner_file.exists():
-            try:
-                l_state = json.loads(learner_file.read_text(encoding="utf-8"))
-                params = l_state.get("params") or {}
-                metrics = l_state.get("metrics") or {}
-                learner_summary = {
-                    "exists": True,
-                    "alpha": params.get("alpha", 0.5),
-                    "beta": params.get("beta", 0.2),
-                    "rolling_mape": metrics.get("rolling_mape"),
-                    "n_sessions": metrics.get("n_sessions", 0),
-                    "history_count": len(l_state.get("history") or []),
-                    "size_bytes": learner_file.stat().st_size,
-                }
-            except Exception:
-                learner_summary = {"exists": True, "corrupted": True, "size_bytes": learner_file.stat().st_size}
+        try:
+            l_state = json.loads(learner_file.read_text(encoding="utf-8"))
+            params = l_state.get("params") or {}
+            metrics = l_state.get("metrics") or {}
+            learner_summary = {
+                "exists": True,
+                "alpha": params.get("alpha", 0.5),
+                "beta": params.get("beta", 0.2),
+                "rolling_mape": metrics.get("rolling_mape"),
+                "n_sessions": metrics.get("n_sessions", 0),
+                "history_count": len(l_state.get("history") or []),
+                "size_bytes": learner_file.stat().st_size,
+            }
+        except FileNotFoundError:
+            pass
+        except Exception:
+            learner_summary = {"exists": True, "corrupted": True, "size_bytes": learner_file.stat().st_size}
 
         # Archived Playbooks
         playbooks_dir = shop_dir / "playbooks"

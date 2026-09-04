@@ -315,7 +315,9 @@ def load_shop_category_list(shop_id: Optional[str] = None, base_dir: Optional[Un
 def load_products_dataframe(source: Union[str, Path, bytes, io.StringIO, io.BytesIO], category_mapping: Optional[Dict[str, str]] = None) -> pd.DataFrame:
     """Loads raw Shopee products data into a cleaned Pandas DataFrame."""
     try:
-        if isinstance(source, (str, Path)) and (isinstance(source, Path) or Path(source).exists()):
+        if hasattr(source, "read_bytes"):
+            df = pd.read_csv(io.BytesIO(source.read_bytes()), dtype=str)
+        elif isinstance(source, (str, Path)) and (isinstance(source, Path) or Path(source).exists()):
             df = pd.read_csv(source, dtype=str)
         elif isinstance(source, bytes):
             df = pd.read_csv(io.BytesIO(source), dtype=str)

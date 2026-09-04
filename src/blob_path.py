@@ -94,7 +94,7 @@ class BlobPath:
     # ── Read ─────────────────────────────────────────────────────────── #
     def read_bytes(self) -> bytes:
         try:
-            return blob.get(self._key).content
+            return blob.get(self._key, access="private", use_cache=False).content
         except BlobNotFoundError:
             raise FileNotFoundError(f"No such blob: {self._key!r}")
 
